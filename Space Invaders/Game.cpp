@@ -3,10 +3,17 @@
 #include "Resource Manager.h"
 #include "Sprite Renderer.h"
 
+
 spriteRenderer *renderer;
 
-Game::Game(GLuint widthIn, GLuint heightIn) :gs(INIT),keys(),keysProcessed(), width(widthIn), height(heightIn)
+Game::Game()
 {
+	gameObject::gameState() = this;
+}
+
+Game::Game(GLuint widthIn, GLuint heightIn) :gs(SPLASH),keys(),keysProcessed(),mouse(),mouseProcessed(), width(widthIn), height(heightIn), enemyAmt(0), playerKills(0), mousePos(0.0,0.0)
+{
+	gameObject::gameState() = this;
 }
 
 Game::~Game()
@@ -22,20 +29,89 @@ void Game::init()
 	ResourceManager::getShader("sprite").use().setInteger("image", 0);
 	ResourceManager::getShader("sprite").setMatrix4("projection", projection);
 
-	ResourceManager::loadTexture("Textures/Brick_Wall.jpg", GL_TRUE, "brick_wall");
+	ResourceManager::loadTexture("Textures/Game_Background.jpg", GL_FALSE, "gamebackground");
+	ResourceManager::loadTexture("Textures/Ship.png", GL_TRUE, "ship");
+	ResourceManager::loadTexture("Textures/Shield.png", GL_TRUE, "shield");
+	ResourceManager::loadTexture("Textures/Bullet.png", GL_TRUE, "bullet");
 	
 	renderer = new spriteRenderer(ResourceManager::getShader("sprite"));
+	player.texture = ResourceManager::getTexture("ship");
+	player.Shield.texture = ResourceManager::getTexture("shield");
+	player.position = glm::vec2(width / 2.0f, height / 2.0f);
 }
 
 void Game::processInput(GLfloat dt)
 {
+	for (int i = 0; i < 1024; ++i)
+	{
+		if (keys[i] && !keysProcessed[i])
+		{
+			keysProcessed[i] = GL_TRUE;
+			continue;
+		}
+		if (!keys[i] && keysProcessed[i])
+		{
+			keysProcessed[i] = GL_FALSE;
+		}
+	}
+	for (int i = 0; i < 3; ++i)
+	{
+		if (mouse[i] && !mouseProcessed[i])
+		{
+			keysProcessed[i] = GL_TRUE;
+			continue;
+		}
+		if (!mouse[i] && mouseProcessed[i])
+			mouseProcessed[i] = GL_FALSE;
+	}
 }
 
 void Game::update(GLfloat dt)
 {
+	if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT])
+		if (player.position.x > player.radius)
+			player.position.x = player.position.x - player.speed.x * dt;
+	if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT])
+		if (player.position.x < width - player.radius)
+			player.position.x = player.position.x + player.speed.x * dt;
+	if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP])
+		if (player.position.y > player.radius)
+			player.position.y = player.position.y - player.speed.y * dt;
+	if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN])
+		if (player.position.y < height - player.radius)
+			player.position.y = player.position.y + player.speed.y * dt;
+	player.update(dt);
+	for (int i = 0; i < playerBullets.size();++i)
+	{
+		playerBullets[i].update(dt);
+		if (playerBullets[i].position.x < 0 || playerBullets[i].position.y < 0 || playerBullets[i].position.x > width || playerBullets[i].position.y > height)
+		{
+			pBulletDelete++;
+			playerBullets.emplace_back(playerBullets[i]);
+			playerBullets.erase(playerBullets.begin() + i);
+		}
+	}
+	for (int i = 0; i < pBulletDelete; ++i)
+	{
+		playerBullets.pop_back();
+	}
+	pBulletDelete = 0;
 }
 
 void Game::render()
 {
-	renderer->drawSprite(ResourceManager::getTexture("brick_wall"), glm::vec2(0, 0), glm::vec2(800, 600), 0.0f, glm::vec3(0.25f, 0.25f, 0.25f));
+	renderer->drawSprite(ResourceManager::getTexture("gamebackground"), glm::vec2(0, 0), glm::vec2(this->width, height), 0.0f);
+	player.draw(*renderer);
+	for(auto iter:playerBullets)
+		iter.draw(*renderer);
+}
+
+void Game::enterGame()
+{
+
+}
+
+void Game::SpawnBullet(std::vector<gameObject> &bullets, GLfloat angle, glm::vec3 colorIn, glm::vec2 pos, GLfloat radius, glm::vec2 spd)
+{
+	bullets.emplace_back(gameObject(pos, radius, ResourceManager::getTexture("bullet"), colorIn, spd, angle));
 }

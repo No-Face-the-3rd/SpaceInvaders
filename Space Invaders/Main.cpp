@@ -5,7 +5,9 @@
 #include "Game.h"
 #include "Resource Manager.h"
 
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mode);
+void mouseButtonCallback(GLFWwindow *window, int button, int action, int modifiers);
+void mouseLocCallback(GLFWwindow *window, double xLoc, double yLoc);
 
 const GLuint SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600;
 
@@ -26,7 +28,9 @@ int main(int argc,char *argv[])
 	glewInit();
 	glGetError();
 
-	glfwSetKeyCallback(window, key_callback);
+	glfwSetKeyCallback(window, keyCallback);
+	glfwSetMouseButtonCallback(window, mouseButtonCallback);
+	glfwSetCursorPosCallback(window, mouseLocCallback);
 
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	glEnable(GL_CULL_FACE);
@@ -37,7 +41,7 @@ int main(int argc,char *argv[])
 
 	GLfloat deltaTime = 0.0f, lastFrame = 0.0f;
 	
-	SpaceInvaders.gs = INIT;
+	SpaceInvaders.gs = SPLASH;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -46,13 +50,18 @@ int main(int argc,char *argv[])
 		lastFrame = currentFrame;
 		glfwPollEvents();
 
-		SpaceInvaders.processInput(deltaTime);
-
-		SpaceInvaders.update(deltaTime);
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		//switch (SpaceInvaders.gs)
+		//{
+		SpaceInvaders.update(deltaTime);
 		SpaceInvaders.render();
+
+		//}
+		SpaceInvaders.processInput(deltaTime);
+
 
 		glfwSwapBuffers(window);
 	}
@@ -63,7 +72,7 @@ int main(int argc,char *argv[])
 	return 0;
 }
 
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
 	if (key >= 0 && key < 1024)
 	{
@@ -78,4 +87,17 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 			SpaceInvaders.keys[key] = GL_FALSE;
 		}
 	}
+}
+
+void mouseButtonCallback(GLFWwindow *window, int key, int action, int modifiers)
+{
+	if (action == GLFW_PRESS)
+		SpaceInvaders.mouse[key] = GL_TRUE;
+	else if (action == GLFW_RELEASE)
+		SpaceInvaders.mouse[key] = GL_FALSE;
+}
+
+void mouseLocCallback(GLFWwindow *window, double xLoc, double yLoc)
+{
+	SpaceInvaders.mousePos = glm::vec2(xLoc, yLoc);
 }

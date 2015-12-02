@@ -9,7 +9,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int modifiers);
 void mouseLocCallback(GLFWwindow *window, double xLoc, double yLoc);
 
-const GLuint SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600;
+const GLuint SCREEN_WIDTH = 1366, SCREEN_HEIGHT = 768;
 
 Game SpaceInvaders(SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -94,7 +94,10 @@ void mouseButtonCallback(GLFWwindow *window, int key, int action, int modifiers)
 	if (action == GLFW_PRESS)
 		SpaceInvaders.mouse[key] = GL_TRUE;
 	else if (action == GLFW_RELEASE)
+	{
 		SpaceInvaders.mouse[key] = GL_FALSE;
+		SpaceInvaders.mouseProcessed[key] = GL_FALSE;
+	}
 }
 
 void mouseLocCallback(GLFWwindow *window, double xLoc, double yLoc)

@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+
 #define PI 3.1415926535f
 #define CORRECTION PI/2
 
@@ -19,7 +20,8 @@ Player::Player()
 	this->rotationDelay = 10.0f;
 	this->health = 100.0f;
 	this->energy = 100.0f;
-	this->shotDelay = 1.0f;
+	this->shotDelay[0] = 1.0f;
+	this->shotDelay[1] = 1.0f;
 }
 
 
@@ -44,24 +46,81 @@ void Player::update(GLfloat dt)
 		if (den > 0)
 			Shield.rotation += PI;
 	}
-	shotDelay -= dt;
+	shotDelay[0] -= dt;
+	shotDelay[1] -= dt;
 	if (gameObject::gameState()->mouse[GLFW_MOUSE_BUTTON_LEFT])
-		//
 		if (!gameObject::gameState()->mouseProcessed[GLFW_MOUSE_BUTTON_LEFT])
-			if (energy >= 18)
+			if (energy >= 10)
 			{
-				shotDelay = 1.0f;
-				//energy -= 10;
-				GLfloat tmpAngle = PI/4;
-				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
-			}
-			
+				shotDelay[0] = 1.0f;
+				energy -= 10;
+				GLfloat tmpAngle = PI / 4;
+				glm::vec3 color = glm::vec3(0.0f, 0.0f, 1.0f);
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+				tmpAngle = 3 * PI / 4;
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+				tmpAngle = 5 * PI / 4;
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+				tmpAngle = 7 * PI / 4;
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
 
+			}
+			else;
+		else
+		{
+			if (energy >= 10 && shotDelay[0] <= 0.0f)
+			{
+				shotDelay[0] = 1.0f;
+				energy -= 10;
+				GLfloat tmpAngle = PI / 4;
+				glm::vec3 color = glm::vec3(0.0f, 0.0f, 1.0f);
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+				tmpAngle = 3 * PI / 4;
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+				tmpAngle = 5 * PI / 4;
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+				tmpAngle = 7 * PI / 4;
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+			}
+		}
+	if(gameObject::gameState()->mouse[GLFW_MOUSE_BUTTON_RIGHT])
+		if (!gameObject::gameState()->mouseProcessed[GLFW_MOUSE_BUTTON_RIGHT])
+			if (energy >= 10)
+			{
+				shotDelay[1] = 1.0f;
+				energy -= 10;
+				GLfloat tmpAngle = 0;
+				glm::vec3 color = glm::vec3(0.0f, 0.0f, 1.0f);
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+				tmpAngle = 2 * PI / 4;
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+				tmpAngle = 4 * PI / 4;
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+				tmpAngle = 6 * PI / 4;
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+
+			}
+			else;
+		else
+		{
+			if (energy >= 10 && shotDelay[1] <= 0.0f)
+			{
+				shotDelay[1] = 1.0f;
+				energy -= 10;
+				GLfloat tmpAngle = 0;
+				glm::vec3 color = glm::vec3(0.0f, 0.0f, 1.0f);
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+				tmpAngle = 2 * PI / 4;
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+				tmpAngle = 4 * PI / 4;
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+				tmpAngle = 6 * PI / 4;
+				gameObject::gameState()->SpawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(150.0f * cos(tmpAngle + CORRECTION), 150.0f * sin(tmpAngle + CORRECTION)));
+			}
+		}
 	energy += 10 * dt;
 	if (energy > 100)
-		energy = 100;
-		
-	
+		energy = 100;	
 }
 
 void Player::draw(spriteRenderer & renderer)

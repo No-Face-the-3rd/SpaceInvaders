@@ -24,7 +24,7 @@ public:
 	GLuint enemyAmt, playerKills;
 	glm::vec2 mousePos;
 	std::vector<gameObject> playerBullets, enemyBullets;
-	GLuint pBulletDelete, eBulletDelete;
+	std::vector<int> pBulletDelete, eBulletDelete;
 
 	Game();
 	Game(GLuint widthIn, GLuint heightIn);

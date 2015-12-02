@@ -3,6 +3,9 @@
 #include "Resource Manager.h"
 #include "Sprite Renderer.h"
 
+#include <algorithm>
+#include <iostream>
+
 
 spriteRenderer *renderer;
 
@@ -58,11 +61,9 @@ void Game::processInput(GLfloat dt)
 	{
 		if (mouse[i] && !mouseProcessed[i])
 		{
-			keysProcessed[i] = GL_TRUE;
+			mouseProcessed[i] = GL_TRUE;
 			continue;
 		}
-		if (!mouse[i] && mouseProcessed[i])
-			mouseProcessed[i] = GL_FALSE;
 	}
 }
 
@@ -86,16 +87,20 @@ void Game::update(GLfloat dt)
 		playerBullets[i].update(dt);
 		if (playerBullets[i].position.x < 0 || playerBullets[i].position.y < 0 || playerBullets[i].position.x > width || playerBullets[i].position.y > height)
 		{
-			pBulletDelete++;
-			playerBullets.emplace_back(playerBullets[i]);
-			playerBullets.erase(playerBullets.begin() + i);
+			pBulletDelete.emplace_back(i);
 		}
 	}
-	for (int i = 0; i < pBulletDelete; ++i)
+	std::sort(pBulletDelete.begin(), pBulletDelete.end());
+	for (int i = 0; i < pBulletDelete.size(); ++i)
 	{
-		playerBullets.pop_back();
+		if (pBulletDelete[i] >= playerBullets.size() - 1)
+		{
+			playerBullets.pop_back();
+			continue;
+		}
+		playerBullets.erase(playerBullets.begin() + pBulletDelete[i] - i);
 	}
-	pBulletDelete = 0;
+	pBulletDelete.clear();
 }
 
 void Game::render()

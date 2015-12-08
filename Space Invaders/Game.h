@@ -21,10 +21,11 @@ public:
 	gameStateEnum gs;
 	GLuint width, height;
 	GLboolean keys[1024], keysProcessed[1024], mouse[3], mouseProcessed[3];
-	GLuint enemyAmt, playerKills;
+	GLuint enemyAmt, playerKills, killAfterChange;
 	glm::vec2 mousePos;
 	std::vector<gameObject> playerBullets, enemyBullets;
-	std::vector<int> pBulletDelete, eBulletDelete;
+	std::vector<Enemy> enemies;
+	std::vector<int> pBulletDelete, eBulletDelete, eDelete;
 
 	Game();
 	Game(GLuint widthIn, GLuint heightIn);
@@ -37,7 +38,8 @@ public:
 	void update(GLfloat dt);
 	void render();
 	void enterGame();
-	void SpawnBullet(std::vector<gameObject> &bullets, GLfloat angle, glm::vec3 colorIn, glm::vec2 pos, GLfloat radius, glm::vec2 spd);
+	void spawnBullet(std::vector<gameObject> &bullets, GLfloat angle, glm::vec3 colorIn, glm::vec2 pos, GLfloat radius, glm::vec2 spd);
+	void spawnEnemy();
 };
 
 #endif

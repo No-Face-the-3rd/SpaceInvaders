@@ -36,7 +36,6 @@ public:
 	~gameObject();
 	virtual void draw(spriteRenderer &renderer);
 	virtual void update(GLfloat dt);
-	virtual void move() {};
 };
 
 #endif

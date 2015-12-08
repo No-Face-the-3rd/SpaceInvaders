@@ -8,13 +8,15 @@
 class Enemy : public gameObject
 {
 public:
-	float aiTimer;
+	float aiTimer, shotDelay;
+	glm::vec2 targetLoc;
+	bool dead, clockwise;
 
 	Enemy();
 	~Enemy();
 
-	void update();
-	void move();
+	void update(GLfloat dt);
+	void procKill();
 };
 
 #endif

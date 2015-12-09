@@ -18,7 +18,7 @@ Game::Game()
 	gameObject::gameState() = this;
 }
 
-Game::Game(GLuint widthIn, GLuint heightIn) :gs(SPLASH), keys(), keysProcessed(), mouse(), mouseProcessed(), width(widthIn), height(heightIn), enemyAmt(3), playerKills(0), mousePos(0.0, 0.0), killAfterChange(0), playerMaxHP(100.0f), playerMaxEnergy(100.0f)
+Game::Game(GLuint widthIn, GLuint heightIn) :gs(SPLASH), keys(), keysProcessed(), mouse(), mouseProcessed(), width(widthIn), height(heightIn), enemyAmt(3), playerKills(0), mousePos(0.0, 0.0), killAfterChange(0), playerMaxHP(100.0f), playerMaxEnergy(100.0f) , staticVisuals(), buttons()
 {
 	gameObject::gameState() = this;
 }
@@ -42,13 +42,18 @@ void Game::init()
 	ResourceManager::loadTexture("Textures/Bullet.png", GL_TRUE, "bullet");
 	ResourceManager::loadTexture("Textures/Enemy.png", GL_TRUE, "enemy");
 	ResourceManager::loadTexture("Textures/Bar.png", GL_TRUE, "bar");
+	ResourceManager::loadTexture("Textures/Loss.png", GL_TRUE, "loss");
 	
 	renderer = new spriteRenderer(ResourceManager::getShader("sprite"));
 	player.texture = ResourceManager::getTexture("ship");
 	player.Shield.texture = ResourceManager::getTexture("shield");
 	player.position = glm::vec2(width / 2.0f, height / 2.0f);
 	player.bars = ResourceManager::getTexture("bar");
+	staticVisuals[0].texture = ResourceManager::getTexture("loss");
 
+
+	staticVisuals[0].position = glm::vec2(width / 2.0f, height / 2.0f);
+	staticVisuals[0].radius = width / 16.0f;
 	srand(time(NULL));
 }
 
@@ -78,119 +83,140 @@ void Game::processInput(GLfloat dt)
 
 void Game::update(GLfloat dt)
 {
-	if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT])
-		if (player.position.x > player.radius)
-			player.position.x = player.position.x - player.speed.x * dt;
-	if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT])
-		if (player.position.x < width - player.radius)
-			player.position.x = player.position.x + player.speed.x * dt;
-	if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP])
-		if (player.position.y > player.radius)
-			player.position.y = player.position.y - player.speed.y * dt;
-	if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN])
-		if (player.position.y < height - player.radius)
-			player.position.y = player.position.y + player.speed.y * dt;
-	player.update(dt);
-	for (int i = 0; i < playerBullets.size();++i)
+	switch (gs)
 	{
-		playerBullets[i].update(dt);
-		if (playerBullets[i].position.x < 0 || playerBullets[i].position.y < 0 || playerBullets[i].position.x > width || playerBullets[i].position.y > height)
+	case PLAY:
+		if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT])
+			if (player.position.x > player.radius)
+				player.position.x = player.position.x - player.speed.x * dt;
+		if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT])
+			if (player.position.x < width - player.radius)
+				player.position.x = player.position.x + player.speed.x * dt;
+		if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP])
+			if (player.position.y > player.radius)
+				player.position.y = player.position.y - player.speed.y * dt;
+		if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN])
+			if (player.position.y < height - player.radius)
+				player.position.y = player.position.y + player.speed.y * dt;
+		player.update(dt);
+		for (int i = 0; i < playerBullets.size(); ++i)
 		{
-			pBulletDelete.emplace_back(i);
-		}
-	}
-	std::sort(pBulletDelete.begin(), pBulletDelete.end());
-	for (int i = 0; i < pBulletDelete.size(); ++i)
-	{
-		if (pBulletDelete[i] >= playerBullets.size() - 1)
-		{
-			playerBullets.pop_back();
-			continue;
-		}
-		else if (playerBullets.size() <= 0)
-			break;
-		playerBullets.erase(playerBullets.begin() + pBulletDelete[i] - i);
-	}
-	pBulletDelete.clear();
-	if (killAfterChange >= enemyAmt)
-	{
-		++enemyAmt;
-		killAfterChange = 0;
-		playerMaxHP += enemyAmt / 2.0f;
-		playerMaxEnergy += enemyAmt / 2.0f;
-	}
-	for (int i = 0; i < enemyBullets.size(); ++i)
-	{
-		enemyBullets[i].update(dt);
-		if (enemyBullets[i].position.x < 0 || enemyBullets[i].position.y < 0 || enemyBullets[i].position.x > width || enemyBullets[i].position.y > height)
-		{
-			eBulletDelete.emplace_back(i);
-		}
-	}
-	std::sort(eBulletDelete.begin(), eBulletDelete.end());
-	for (int i = 0; i < eBulletDelete.size(); ++i)
-	{
-		if (eBulletDelete[i] >= enemyBullets.size() - 1)
-		{
-			enemyBullets.pop_back();
-			continue;
-		}
-		else if (enemyBullets.size() <= 0)
-			break;
-		enemyBullets.erase(enemyBullets.begin() + eBulletDelete[i] - i);
-	}
-	eBulletDelete.clear();
-
-	if (enemies.size() < enemyAmt)
-	{
-		spawnEnemy();
-	}
-	for (int i = 0; i < enemies.size();++i)
-	{
-		enemies[i].update(dt);
-	}
-	//if (keys[GLFW_KEY_SPACE]) && !keysProcessed[GLFW_KEY_SPACE])
-		//++enemyAmt;
-	int popped = 0;
-	for (int i = 0; i < enemies.size(); ++i)
-	{
-		if (enemies[i].dead)
-		{
-			enemies[i].color = glm::vec3(1.0f, 0.0f, 0.0f);
-			if (enemies[i].aiTimer <= 0.0f)
+			playerBullets[i].update(dt);
+			if (playerBullets[i].position.x < 0 || playerBullets[i].position.y < 0 || playerBullets[i].position.x > width || playerBullets[i].position.y > height)
 			{
-				enemies[i].color = glm::vec3(1.0f, 1.0f, 1.0f);
-				if (i >= enemies.size())
-					enemies.pop_back();
-				else
-					enemies.erase(enemies.begin() + i - popped);
-				++playerKills;
-				++killAfterChange;
-				++popped;
+				pBulletDelete.emplace_back(i);
 			}
 		}
+		std::sort(pBulletDelete.begin(), pBulletDelete.end());
+		for (int i = 0; i < pBulletDelete.size(); ++i)
+		{
+			if (pBulletDelete[i] >= playerBullets.size() - 1)
+			{
+				playerBullets.pop_back();
+				continue;
+			}
+			else if (playerBullets.size() <= 0)
+				break;
+			playerBullets.erase(playerBullets.begin() + pBulletDelete[i] - i);
+		}
+		pBulletDelete.clear();
+		if (killAfterChange >= enemyAmt)
+		{
+			++enemyAmt;
+			killAfterChange = 0;
+			playerMaxHP += enemyAmt / 2.0f;
+			playerMaxEnergy += enemyAmt / 2.0f;
+		}
+		for (int i = 0; i < enemyBullets.size(); ++i)
+		{
+			enemyBullets[i].update(dt);
+			if (enemyBullets[i].position.x < 0 || enemyBullets[i].position.y < 0 || enemyBullets[i].position.x > width || enemyBullets[i].position.y > height)
+			{
+
+				eBulletDelete.emplace_back(i);
+			}
+		}
+		std::sort(eBulletDelete.begin(), eBulletDelete.end());
+		for (int i = 0; i < eBulletDelete.size(); ++i)
+		{
+			if (eBulletDelete[i] >= enemyBullets.size() - 1)
+			{
+				enemyBullets.pop_back();
+				continue;
+			}
+			else if (enemyBullets.size() <= 0)
+				break;
+			enemyBullets.erase(enemyBullets.begin() + eBulletDelete[i] - i);
+		}
+		eBulletDelete.clear();
+
+		if (enemies.size() < enemyAmt)
+		{
+			spawnEnemy();
+		}
+		for (int i = 0; i < enemies.size(); ++i)
+		{
+			enemies[i].update(dt);
+		}
+		//if (keys[GLFW_KEY_SPACE]) && !keysProcessed[GLFW_KEY_SPACE])
+			//++enemyAmt;
+		int popped = 0;
+		for (int i = 0; i < enemies.size(); ++i)
+		{
+			if (enemies[i].dead)
+			{
+				enemies[i].color = glm::vec3(1.0f, 0.0f, 0.0f);
+				if (enemies[i].aiTimer <= 0.0f)
+				{
+					enemies[i].color = glm::vec3(1.0f, 1.0f, 1.0f);
+					if (i >= enemies.size())
+						enemies.pop_back();
+					else
+						enemies.erase(enemies.begin() + i - popped);
+					++playerKills;
+					++killAfterChange;
+					++popped;
+				}
+			}
+		}
+		popped = 0;
+		player.health += 2.5f / 100.0f * playerMaxHP * dt;
+		if (player.health > playerMaxHP)
+			player.health = playerMaxHP;
+		else if (player.health <= 0.0f)
+		{
+			player.health = 0.0f;
+			gs = LOSE;
+		}
+		break;
 	}
-	popped = 0;
-
-	if (player.health <= 0.0f);
-
-	player.health += 2.5f / 100.0f * playerMaxHP * dt;
-	if (player.health > playerMaxHP)
-		player.health = playerMaxHP;
-	else if (player.health < 0.0f)
-		player.health = 0.0f;
 }
 
 void Game::render()
 {
 	renderer->drawSprite(ResourceManager::getTexture("gamebackground"), glm::vec2(0, 0), glm::vec2(this->width, height), 0.0f);
-	for (auto iter : enemies)
-		iter.draw(*renderer);
-	player.draw(*renderer);
-	for(auto iter:playerBullets)
-		iter.draw(*renderer);
-	for (auto iter : enemyBullets)
-		iter.draw(*renderer);
+	switch (gs)
+	{
+	case LOSE:
+		for (auto iter : enemies)
+			iter.draw(*renderer);
+		player.draw(*renderer);
+		for (auto iter : playerBullets)
+			iter.draw(*renderer);
+		for (auto iter : enemyBullets)
+			iter.draw(*renderer);
+		staticVisuals[0].draw(*renderer);
+		break;
+	case PLAY:
+		for (auto iter : enemies)
+			iter.draw(*renderer);
+		player.draw(*renderer);
+		for(auto iter:playerBullets)
+			iter.draw(*renderer);
+		for (auto iter : enemyBullets)
+			iter.draw(*renderer);
+		break;
+	}
 }
 
 void Game::enterGame()

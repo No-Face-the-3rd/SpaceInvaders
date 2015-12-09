@@ -17,6 +17,7 @@ gameObject::~gameObject()
 
 void gameObject::draw(spriteRenderer & renderer)
 {
+
 	renderer.drawSprite(this->texture, this->position - this->radius, glm::vec2(this->radius) * 2.0f, this->rotation, this->color);
 }
 

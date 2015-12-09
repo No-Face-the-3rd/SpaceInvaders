@@ -153,7 +153,7 @@ void Player::update(GLfloat dt)
 		}
 		if (dist < radius * 1.5f + gameObject::gameState()->enemyBullets[i].radius && std::abs(testAngle - Shield.rotation) < PI / 2.0f && energy >= 20.0f)
 		{
-			energy -= 1.0f;
+			energy -= 3.0f / 100.0f * gameObject::gameState()->playerMaxEnergy;
 			gameObject::gameState()->eBulletDelete.emplace_back(i);
 			health += 5.0f;
 		}
@@ -162,7 +162,7 @@ void Player::update(GLfloat dt)
 			gameObject::gameState()->eBulletDelete.emplace_back(i);
 			damageDelay = 0.25f;
 			color = glm::vec3(1.0f, 0.5f, 0.5f);
-			health -= 15.0f;
+			health -= 33.0f / 100.0f * gameObject::gameState()->playerMaxHP;
 			damageTimer = 0.25f;
 		}
 	}

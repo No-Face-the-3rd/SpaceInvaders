@@ -13,7 +13,7 @@
 #include "Enemy.h"
 
 
-enum gameStateEnum { SPLASH,MENU_INIT,MENU,PLAY_INIT,PLAY,PAUSE,ABOUT};
+enum gameStateEnum { SPLASH,MENU_INIT,MENU,PLAY_INIT,PLAY,PAUSE,LOSE};
 
 class Game
 {
@@ -27,6 +27,7 @@ public:
 	std::vector<gameObject> playerBullets, enemyBullets;
 	std::vector<Enemy> enemies;
 	std::vector<int> pBulletDelete, eBulletDelete, eDelete;
+	gameObject staticVisuals[3], buttons[4];
 
 	Game();
 	Game(GLuint widthIn, GLuint heightIn);

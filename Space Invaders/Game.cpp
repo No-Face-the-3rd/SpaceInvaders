@@ -18,7 +18,7 @@ Game::Game()
 	gameObject::gameState() = this;
 }
 
-Game::Game(GLuint widthIn, GLuint heightIn) :gs(SPLASH), keys(), keysProcessed(), mouse(), mouseProcessed(), width(widthIn), height(heightIn), enemyAmt(3), playerKills(0), mousePos(0.0, 0.0), killAfterChange(0)
+Game::Game(GLuint widthIn, GLuint heightIn) :gs(SPLASH), keys(), keysProcessed(), mouse(), mouseProcessed(), width(widthIn), height(heightIn), enemyAmt(3), playerKills(0), mousePos(0.0, 0.0), killAfterChange(0), playerMaxHP(100.0f), playerMaxEnergy(100.0f)
 {
 	gameObject::gameState() = this;
 }
@@ -107,6 +107,8 @@ void Game::update(GLfloat dt)
 			playerBullets.pop_back();
 			continue;
 		}
+		else if (playerBullets.size() <= 0)
+			break;
 		playerBullets.erase(playerBullets.begin() + pBulletDelete[i] - i);
 	}
 	pBulletDelete.clear();
@@ -114,7 +116,31 @@ void Game::update(GLfloat dt)
 	{
 		++enemyAmt;
 		killAfterChange = 0;
+		playerMaxHP += enemyAmt / 2.0f;
+		playerMaxEnergy += enemyAmt / 2.0f;
 	}
+	for (int i = 0; i < enemyBullets.size(); ++i)
+	{
+		enemyBullets[i].update(dt);
+		if (enemyBullets[i].position.x < 0 || enemyBullets[i].position.y < 0 || enemyBullets[i].position.x > width || enemyBullets[i].position.y > height)
+		{
+			eBulletDelete.emplace_back(i);
+		}
+	}
+	std::sort(eBulletDelete.begin(), eBulletDelete.end());
+	for (int i = 0; i < eBulletDelete.size(); ++i)
+	{
+		if (eBulletDelete[i] >= enemyBullets.size() - 1)
+		{
+			enemyBullets.pop_back();
+			continue;
+		}
+		else if (enemyBullets.size() <= 0)
+			break;
+		enemyBullets.erase(enemyBullets.begin() + eBulletDelete[i] - i);
+	}
+	eBulletDelete.clear();
+
 	if (enemies.size() < enemyAmt)
 	{
 		spawnEnemy();
@@ -123,8 +149,8 @@ void Game::update(GLfloat dt)
 	{
 		enemies[i].update(dt);
 	}
-	if (keys[GLFW_KEY_SPACE] && !keysProcessed[GLFW_KEY_SPACE])
-		++enemyAmt;
+	//if (keys[GLFW_KEY_SPACE]) && !keysProcessed[GLFW_KEY_SPACE])
+		//++enemyAmt;
 	int popped = 0;
 	for (int i = 0; i < enemies.size(); ++i)
 	{
@@ -148,9 +174,9 @@ void Game::update(GLfloat dt)
 
 	if (player.health <= 0.0f);
 
-	player.health += 3.5f * dt;
-	if (player.health > 100.0f)
-		player.health = 100.0f;
+	player.health += 2.5f / 100.0f * playerMaxHP * dt;
+	if (player.health > playerMaxHP)
+		player.health = playerMaxHP;
 	else if (player.health < 0.0f)
 		player.health = 0.0f;
 }
@@ -162,6 +188,8 @@ void Game::render()
 		iter.draw(*renderer);
 	player.draw(*renderer);
 	for(auto iter:playerBullets)
+		iter.draw(*renderer);
+	for (auto iter : enemyBullets)
 		iter.draw(*renderer);
 }
 
@@ -193,5 +221,8 @@ void Game::spawnEnemy()
 	tmp->rotation = glm::linearRand(0.0f, 2 * PI);
 	tmp->speed = glm::vec2(75.0f, 75.0f);
 	tmp->targetLoc = tmp->position;
-	tmp->clockwise = std::rand() % 2;
+	if (std::rand() % 2)
+		tmp->clockwise = true;
+	else
+		tmp->clockwise = false;
 }

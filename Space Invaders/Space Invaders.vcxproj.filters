@@ -42,6 +42,9 @@
     <ClCompile Include="Enemy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TextRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Texture.h">
@@ -68,10 +71,15 @@
     <ClInclude Include="Enemy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TextRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\sprite.vs" />
     <None Include="Shaders\sprite.frag" />
+    <None Include="Shaders\text.vs" />
+    <None Include="Shaders\text.frag" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\Brick_Wall.jpg">

@@ -7,7 +7,7 @@
 class Player : public gameObject
 {
 public:
-	GLfloat health, energy, rotationDelay, shotDelay[2], damageTimer;
+	GLfloat health, energy, damageDelay, shotDelay[2], damageTimer;
 	gameObject Shield;
 
 	Texture2D bars;

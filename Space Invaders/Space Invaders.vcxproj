@@ -81,7 +81,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32s.lib;SOIL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32s.lib;SOIL.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -131,6 +131,7 @@
     <ClCompile Include="Resource Manager.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Sprite Renderer.cpp" />
+    <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -141,11 +142,14 @@
     <ClInclude Include="Resource Manager.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Sprite Renderer.h" />
+    <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\sprite.frag" />
     <None Include="Shaders\sprite.vs" />
+    <None Include="Shaders\text.frag" />
+    <None Include="Shaders\text.vs" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\Brick_Wall.jpg" />

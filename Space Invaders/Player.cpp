@@ -21,7 +21,7 @@ Player::Player()
 	this->color = glm::vec3(1.0f,1.0f,1.0f);
 	this->radius = 25.0f;
 	this->rotation = 0.0f;
-	this->rotationDelay = 10.0f;
+	this->damageDelay = 0.0f;
 	this->health = 100.0f;
 	this->energy = 100.0f;
 	this->shotDelay[0] = 1.0f;
@@ -53,7 +53,7 @@ void Player::update(GLfloat dt)
 	}
 	shotDelay[0] -= dt;
 	shotDelay[1] -= dt;
-	float bSpeed = 200.0f;
+	float bSpeed = 300.0f;
 	if (gameObject::gameState()->mouse[GLFW_MOUSE_BUTTON_LEFT])
 		if (!gameObject::gameState()->mouseProcessed[GLFW_MOUSE_BUTTON_LEFT])
 			if (energy >= 10)
@@ -124,12 +124,50 @@ void Player::update(GLfloat dt)
 				gameObject::gameState()->spawnBullet(gameObject::gameState()->playerBullets, tmpAngle, color, glm::vec2(position.x + radius * cos(tmpAngle + CORRECTION), position.y + radius * sin(tmpAngle + CORRECTION)), radius / 10.0f, glm::vec2(bSpeed * cos(tmpAngle + CORRECTION), bSpeed * sin(tmpAngle + CORRECTION)));
 			}
 		}
-	energy += 10 * dt;
-	if (energy > 100)
-		energy = 100;	
+	energy = 5.0f / 100.0f * gameObject::gameState()->playerMaxEnergy * dt > 10.0f * dt ? energy + 5.0f / 100.0f * gameObject::gameState()->playerMaxEnergy * dt : energy + 10.0f * dt;
+	if (energy > gameObject::gameState()->playerMaxEnergy)
+		energy = gameObject::gameState()->playerMaxEnergy;
+	if (energy < 0.0f)
+		energy = 0.0f;
 	if (damageTimer > 0.0f)
 		damageTimer -= dt;
 	Shield.color = glm::vec3(1.0f);
+
+	for (int i = 0; i < gameObject::gameState()->enemyBullets.size(); ++i)
+	{
+		float dist = glm::distance(position, gameObject::gameState()->enemyBullets[i].position);
+		float num = gameObject::gameState()->enemyBullets[i].position.y - this->position.y, den = gameObject::gameState()->enemyBullets[i].position.x - this->position.x;
+		float testAngle = 0.0f;
+		if (!den)
+		{
+			if (num >= 0)
+				testAngle = PI;
+			else if (num < 0)
+				testAngle = 0.0f;
+		}
+		else
+		{
+			testAngle = atan(num / den) - CORRECTION;
+			if (den > 0)
+				testAngle += PI;
+		}
+		if (dist < radius * 1.5f + gameObject::gameState()->enemyBullets[i].radius && std::abs(testAngle - Shield.rotation) < PI / 2.0f && energy >= 20.0f)
+		{
+			energy -= 1.0f;
+			gameObject::gameState()->eBulletDelete.emplace_back(i);
+			health += 5.0f;
+		}
+		if (dist < radius + gameObject::gameState()->enemyBullets[i].radius && damageDelay <= 0.0f)
+		{
+			gameObject::gameState()->eBulletDelete.emplace_back(i);
+			damageDelay = 0.25f;
+			color = glm::vec3(1.0f, 0.5f, 0.5f);
+			health -= 15.0f;
+			damageTimer = 0.25f;
+		}
+	}
+	if(damageDelay > 0.0f)
+		damageDelay -= dt;
 }
 
 void Player::draw(spriteRenderer & renderer)
@@ -142,12 +180,12 @@ void Player::draw(spriteRenderer & renderer)
 	glm::vec2 pos = glm::vec2(padding, gameObject::gameState()->height - (padding + 10.0f));
 	renderer.drawSprite(this->bars, pos, glm::vec2(150.0f, 10.0f), 0.0f, colorTmp);
 	colorTmp = glm::vec3(1.0f, 0.0f, 0.0f);
-	renderer.drawSprite(this->bars, pos + 1.0f, glm::vec2(150.0f * health / 100.0f, 8.0f), 0.0f, colorTmp);
+	renderer.drawSprite(this->bars, pos + 1.0f, glm::vec2(150.0f * health / gameObject::gameState()->playerMaxHP, 8.0f),0.0f, colorTmp);
 	colorTmp = glm::vec3(0.0f, 0.0f, 0.5f);
 	pos = glm::vec2(gameObject::gameState()->width - (padding + 150.0f), gameObject::gameState()->height - (padding + 10.0f));
 	renderer.drawSprite(this->bars, pos, glm::vec2(150.0f, 10.0f), 0.0f, colorTmp);
 	colorTmp = glm::vec3(0.0f, 0.0f, 1.0f);
-	renderer.drawSprite(this->bars, pos + 1.0f, glm::vec2(150.0f * energy / 100.0f, 8.0f), 0.0f, colorTmp);
+	renderer.drawSprite(this->bars, pos + 1.0f, glm::vec2(150.0f * energy / gameObject::gameState()->playerMaxEnergy, 8.0f), 0.0f, colorTmp);
 	
 	if(damageTimer <= 0.0f)
 		color = glm::vec3(1.0f, 1.0f, 1.0f);

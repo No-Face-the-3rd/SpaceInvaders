@@ -11,7 +11,9 @@
 #define CORRECTION PI/2
 #endif
 
-Enemy::Enemy()
+#include <iostream>
+
+Enemy::Enemy() : shotDelay(0.75f)
 {
 }
 
@@ -54,13 +56,14 @@ void Enemy::update(GLfloat dt)
 			testAngle += PI;
 	}
 	float distToPlayer = glm::distance(this->position, gameObject::gameState()->player.position);
-	if (distToPlayer <= this->radius + gameObject::gameState()->player.radius * 1.5f && std::abs(testAngle - gameObject::gameState()->player.Shield.rotation) < PI / 2 && gameObject::gameState()->player.energy >= 20)
+	if (distToPlayer <= this->radius + gameObject::gameState()->player.radius * 1.5f && std::abs(testAngle - gameObject::gameState()->player.Shield.rotation) < PI / 2 && gameObject::gameState()->player.energy >= 20 && !dead)
+
 	{
 		gameObject::gameState()->player.energy -= 20.0f;
 		procKill();
 		gameObject::gameState()->player.Shield.color = glm::vec3(0.0f, 0.0f, 1.0f);
 	}
-	else if (distToPlayer <= this->radius + gameObject::gameState()->player.radius && gameObject::gameState()->player.damageTimer <= 0.0f)
+	else if (distToPlayer <= this->radius + gameObject::gameState()->player.radius && gameObject::gameState()->player.damageTimer <= 0.0f && !dead)
 	{
 		gameObject::gameState()->player.health -= 28.0f;
 		procKill();
@@ -86,18 +89,21 @@ void Enemy::update(GLfloat dt)
 	}
 	else
 	{
-		testAngle = atan(num / den) - CORRECTION;
-		if (den > 0)
+		testAngle = atan(num / den);
+		if (den < 0)
 			testAngle += PI;
 	}
+	if (testAngle < 0)
+		testAngle += 2 * PI;
 
+	float scale = 0.95f;
 	if (aiTimer <= 0.0f)
 	{
-		aiTimer = 0.25f;
+		aiTimer = 0.15f;
 		if (clockwise)
-			targetLoc = gameObject::gameState()->player.position + glm::vec2(distToPlayer * cos(testAngle - (10.0f * PI / 180.0f)), distToPlayer * sin(testAngle - 10.0f*PI / 180.0f));
+			targetLoc = gameObject::gameState()->player.position + glm::vec2(scale * distToPlayer * cos(testAngle - (10.0f * PI / 180.0f)), scale * distToPlayer * sin(testAngle - (10.0f * PI / 180.0f)));
 		else
-			targetLoc = gameObject::gameState()->player.position + glm::vec2(distToPlayer * cos(testAngle + (10.0f * PI / 180.0f)), distToPlayer * sin(testAngle + 10.0f*PI / 180.0f));
+			targetLoc = gameObject::gameState()->player.position + glm::vec2(scale * distToPlayer * cos(testAngle + (10.0f * PI / 180.0f)), scale * distToPlayer * sin(testAngle + (10.0f * PI / 180.0f)));
 	}
 	
 	aiTimer -= dt;
@@ -121,6 +127,13 @@ void Enemy::update(GLfloat dt)
 		this->position.y = gameObject::gameState()->height - this->radius - 5.0f;
 	if (this->position.x >= gameObject::gameState()->width - this->radius - 5.0f)
 		this->position.x = gameObject::gameState()->width - this->radius - 5.0f;
+
+	shotDelay -= dt;
+	if (shotDelay <= 0.0f)
+	{
+		gameObject::gameState()->spawnBullet(gameObject::gameState()->enemyBullets, 0.0f , glm::vec3(1.0f, 0.0f, 0.0f), position + glm::vec2(radius * cos(rotation - PI / 2.0f), radius * sin(rotation - PI / 2.0f)), radius / 10.0f, glm::vec2(200.0f * cos(rotation - PI / 2.0f), 200.0f * sin(rotation - PI / 2.0f)));
+		shotDelay = 0.75f;
+	}
 }
 
 

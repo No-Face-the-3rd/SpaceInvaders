@@ -22,6 +22,7 @@ public:
 	GLuint width, height;
 	GLboolean keys[1024], keysProcessed[1024], mouse[3], mouseProcessed[3];
 	GLuint enemyAmt, playerKills, killAfterChange;
+	float playerMaxHP, playerMaxEnergy;
 	glm::vec2 mousePos;
 	std::vector<gameObject> playerBullets, enemyBullets;
 	std::vector<Enemy> enemies;

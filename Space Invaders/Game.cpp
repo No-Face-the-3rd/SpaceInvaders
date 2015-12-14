@@ -18,7 +18,7 @@ Game::Game()
 	gameObject::gameState() = this;
 }
 
-Game::Game(GLuint widthIn, GLuint heightIn) :gs(SPLASH), keys(), keysProcessed(), mouse(), mouseProcessed(), width(widthIn), height(heightIn), enemyAmt(3), playerKills(0), mousePos(0.0, 0.0), killAfterChange(0), playerMaxHP(100.0f), playerMaxEnergy(100.0f) , staticVisuals(), buttons()
+Game::Game(GLuint widthIn, GLuint heightIn) :gs(SPLASH), keys(), keysProcessed(), mouse(), mouseProcessed(), width(widthIn), height(heightIn), enemyAmt(3), playerKills(0), mousePos(0.0, 0.0), killAfterChange(0), playerMaxHP(100.0f), playerMaxEnergy(100.0f) , staticVisuals(), buttons(), anyKeyDelay(0), shouldClose(GL_FALSE)
 {
 	gameObject::gameState() = this;
 }
@@ -43,6 +43,13 @@ void Game::init()
 	ResourceManager::loadTexture("Textures/Enemy.png", GL_TRUE, "enemy");
 	ResourceManager::loadTexture("Textures/Bar.png", GL_TRUE, "bar");
 	ResourceManager::loadTexture("Textures/Loss.png", GL_TRUE, "loss");
+	ResourceManager::loadTexture("Textures/Title.png", GL_TRUE, "title");
+	ResourceManager::loadTexture("Textures/Play.png", GL_TRUE, "play");
+	ResourceManager::loadTexture("Textures/Resume.png", GL_TRUE, "resume");
+	ResourceManager::loadTexture("Textures/Menu.png", GL_TRUE, "menu");
+	ResourceManager::loadTexture("Textures/Exit.png", GL_TRUE, "exit");
+	ResourceManager::loadTexture("Textures/Button.png", GL_TRUE, "button");
+	ResourceManager::loadTexture("Textures/Pause.png", GL_TRUE, "pause");
 	
 	renderer = new spriteRenderer(ResourceManager::getShader("sprite"));
 	player.texture = ResourceManager::getTexture("ship");
@@ -50,10 +57,38 @@ void Game::init()
 	player.position = glm::vec2(width / 2.0f, height / 2.0f);
 	player.bars = ResourceManager::getTexture("bar");
 	staticVisuals[0].texture = ResourceManager::getTexture("loss");
+	staticVisuals[1].texture = ResourceManager::getTexture("title");
+	staticVisuals[2].texture = ResourceManager::getTexture("title");
+	staticVisuals[3].texture = ResourceManager::getTexture("play");
+	staticVisuals[4].texture = ResourceManager::getTexture("exit");
+	staticVisuals[5].texture = ResourceManager::getTexture("resume");
+	staticVisuals[6].texture = ResourceManager::getTexture("menu");
+	staticVisuals[7].texture = ResourceManager::getTexture("pause");
+
+	for (int i = 0; i < 3; ++i)
+	{
+		buttons[i].texture = ResourceManager::getTexture("button");
+		buttons[i].color = glm::vec3(0.5f, 0.5f, 1.0f);
+	}
 
 
-	staticVisuals[0].position = glm::vec2(width / 2.0f, height / 2.0f);
-	staticVisuals[0].radius = width / 16.0f;
+	glm::vec2 mid = glm::vec2(width / 2.0f, height / 2.0f);
+
+	for (int i = 0; i < 3; ++i)
+		staticVisuals[i].color = glm::vec3(1.0f, 1.0f, 0.0f);
+	staticVisuals[7].color = glm::vec3(1.0f, 1.0f, 0.0f);
+	staticVisuals[0].radius = mid.x / 4.0f;
+	staticVisuals[0].position = glm::vec2(mid.x, mid.y);
+	staticVisuals[1].radius = staticVisuals[7].radius = mid.x / 4.0f;
+	staticVisuals[1].position = staticVisuals[7].position = glm::vec2(mid.x, staticVisuals[1].radius / 2.0f);
+	staticVisuals[2].radius = mid.x / 2.0f;
+	staticVisuals[2].position = glm::vec2(mid.x, mid.y);
+	buttons[0].radius = staticVisuals[3].radius = staticVisuals[5].radius = mid.x / 4.0f;
+	buttons[0].position = staticVisuals[3].position = staticVisuals[5].position = glm::vec2(mid.x, mid.y / 2.0f);
+	buttons[1].radius = staticVisuals[6].radius = mid.x / 4.0f;
+	buttons[1].position = staticVisuals[6].position = glm::vec2(mid.x, mid.y);
+	buttons[2].radius = staticVisuals[4].radius = mid.x / 4.0f;
+	buttons[2].position = staticVisuals[4].position = glm::vec2(mid.x, mid.y + mid.y / 2.0f);
 	srand(time(NULL));
 }
 
@@ -85,7 +120,50 @@ void Game::update(GLfloat dt)
 {
 	switch (gs)
 	{
+	case SPLASH:
+		for (int i = 0; i < 3; ++i)
+			if (mouse[i])
+			{
+				gs = MENU_INIT;
+				break;
+			}
+		for (int i = 0; i < 1023; ++i)
+			if (keys[i])
+			{
+				gs = MENU_INIT;
+				break;
+			}
+		break;
+	case MENU_INIT:
+		gs = MENU;
+		break;
+	case MENU:
+		for (int i = 0; i < 3; ++i)
+		{
+			if (mousePos.x <= buttons[i].position.x + buttons[i].radius && mousePos.x >= buttons[i].position.x - buttons[i].radius && mousePos.y <= buttons[i].position.y + buttons[i].radius / 4.0f && mousePos.y >= buttons[i].position.y - buttons[i].radius / 4.0f)
+				buttons[i].color = glm::vec3(1.0f, 0.5f, 1.0f);
+			else
+				buttons[i].color = glm::vec3(0.5f, 0.5f, 1.0f);
+		}
+		if (mouse[GLFW_MOUSE_BUTTON_LEFT] && !mouseProcessed[GLFW_MOUSE_BUTTON_LEFT])
+		{
+			if (mousePos.x <= buttons[0].position.x + buttons[0].radius && mousePos.x >= buttons[0].position.x - buttons[0].radius && mousePos.y <= buttons[0].position.y + buttons[0].radius / 4.0f && mousePos.y >= buttons[0].position.y - buttons[0].radius / 4.0f)
+				gs = PLAY_INIT;
+			if (mousePos.x <= buttons[2].position.x + buttons[2].radius && mousePos.x >= buttons[2].position.x - buttons[2].radius && mousePos.y <= buttons[2].position.y + buttons[2].radius / 4.0f && mousePos.y >= buttons[2].position.y - buttons[2].radius / 4.0f)
+				shouldClose = GL_TRUE;
+		}
+		if(keys[GLFW_KEY_X])
+			shouldClose = GL_TRUE;
+		if (keys[GLFW_KEY_P] && !keysProcessed[GLFW_KEY_P])
+			gs = PLAY_INIT;
+		break;
+	case PLAY_INIT:
+		enterGame();
+		break;
 	case PLAY:
+	{
+		if ((keys[GLFW_KEY_P] && !keysProcessed[GLFW_KEY_P]) || (keys[GLFW_KEY_ESCAPE] && !keysProcessed[GLFW_KEY_ESCAPE]))
+			gs = PAUSE;
 		if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT])
 			if (player.position.x > player.radius)
 				player.position.x = player.position.x - player.speed.x * dt;
@@ -186,8 +264,55 @@ void Game::update(GLfloat dt)
 		else if (player.health <= 0.0f)
 		{
 			player.health = 0.0f;
+			anyKeyDelay = 0;
 			gs = LOSE;
 		}
+		break;
+	}
+	case PAUSE:
+	{
+		glm::vec2 mid = glm::vec2(width / 2.0f, height / 2.0f);
+		for (int i = 0; i < 3; ++i)
+		{
+			if (mousePos.x <= buttons[i].position.x + buttons[i].radius && mousePos.x >= buttons[i].position.x - buttons[i].radius && mousePos.y <= buttons[i].position.y + buttons[i].radius / 4.0f && mousePos.y >= buttons[i].position.y - buttons[i].radius / 4.0f)
+				buttons[i].color = glm::vec3(1.0f, 0.5f, 1.0f);
+			else
+				buttons[i].color = glm::vec3(0.5f, 0.5f, 1.0f);
+		}
+		if (mouse[GLFW_MOUSE_BUTTON_LEFT] && !mouseProcessed[GLFW_MOUSE_BUTTON_LEFT])
+		{
+			if (mousePos.x <= buttons[0].position.x + buttons[0].radius && mousePos.x >= buttons[0].position.x - buttons[0].radius && mousePos.y <= buttons[0].position.y + buttons[0].radius / 4.0f && mousePos.y >= buttons[0].position.y - buttons[0].radius / 4.0f)
+				gs = PLAY;
+			if (mousePos.x <= buttons[1].position.x + buttons[1].radius && mousePos.x >= buttons[1].position.x - buttons[1].radius && mousePos.y <= buttons[1].position.y + buttons[1].radius / 4.0f && mousePos.y >= buttons[1].position.y - buttons[1].radius / 4.0f)
+				gs = MENU_INIT;
+			if (mousePos.x <= buttons[2].position.x + buttons[2].radius && mousePos.x >= buttons[2].position.x - buttons[2].radius && mousePos.y <= buttons[2].position.y + buttons[2].radius / 4.0f && mousePos.y >= buttons[2].position.y - buttons[2].radius / 4.0f)
+				shouldClose = GL_TRUE;
+		}
+		if (keys[GLFW_KEY_X])
+			shouldClose = GL_TRUE;
+		if (keys[GLFW_KEY_M])
+			gs = MENU_INIT;
+		if ((keys[GLFW_KEY_ESCAPE] && !keysProcessed[GLFW_KEY_ESCAPE]) || (keys[GLFW_KEY_R] && !keysProcessed[GLFW_KEY_R]))
+			gs = PLAY;
+		break;
+	}
+	case LOSE:
+		if (anyKeyDelay > 100)
+		{
+			for (int i = 0; i < 3; ++i)
+				if (mouse[i])
+				{
+					gs = MENU_INIT;
+					break;
+				}
+			for (int i = 0; i < 1023; ++i)
+				if (keys[i])
+				{
+					gs = MENU_INIT;
+					break;
+				}
+		}
+		++anyKeyDelay;
 		break;
 	}
 }
@@ -197,15 +322,15 @@ void Game::render()
 	renderer->drawSprite(ResourceManager::getTexture("gamebackground"), glm::vec2(0, 0), glm::vec2(this->width, height), 0.0f);
 	switch (gs)
 	{
-	case LOSE:
-		for (auto iter : enemies)
-			iter.draw(*renderer);
-		player.draw(*renderer);
-		for (auto iter : playerBullets)
-			iter.draw(*renderer);
-		for (auto iter : enemyBullets)
-			iter.draw(*renderer);
-		staticVisuals[0].draw(*renderer);
+	case SPLASH:
+		staticVisuals[2].draw(*renderer);
+		break;
+	case MENU:
+		staticVisuals[1].draw(*renderer);
+		buttons[0].draw(*renderer);
+		buttons[2].draw(*renderer);
+		staticVisuals[3].draw(*renderer);
+		staticVisuals[4].draw(*renderer);
 		break;
 	case PLAY:
 		for (auto iter : enemies)
@@ -216,12 +341,44 @@ void Game::render()
 		for (auto iter : enemyBullets)
 			iter.draw(*renderer);
 		break;
+	case PAUSE:
+		buttons[0].draw(*renderer);
+		buttons[1].draw(*renderer);
+		buttons[2].draw(*renderer);
+		staticVisuals[4].draw(*renderer);
+		staticVisuals[5].draw(*renderer);
+		staticVisuals[6].draw(*renderer);
+		staticVisuals[7].draw(*renderer);
+		break;
+	case LOSE:
+		for (auto iter : enemies)
+			iter.draw(*renderer);
+		player.draw(*renderer);
+		for (auto iter : playerBullets)
+			iter.draw(*renderer);
+		for (auto iter : enemyBullets)
+			iter.draw(*renderer);
+		staticVisuals[0].draw(*renderer);
+		break;
 	}
 }
 
 void Game::enterGame()
 {
-
+	gs = PLAY;
+	enemies.clear();
+	enemyAmt = 3;
+	playerKills = 0;
+	killAfterChange = 0;
+	playerMaxHP = 100.0f;
+	playerMaxEnergy = 100.0f;
+	playerBullets.clear();
+	enemyBullets.clear();
+	pBulletDelete.clear();
+	eBulletDelete.clear();
+	eDelete.clear();
+	player.init();
+	anyKeyDelay = 0;
 }
 
 void Game::spawnBullet(std::vector<gameObject> &bullets, GLfloat angle, glm::vec3 colorIn, glm::vec2 pos, GLfloat radius, glm::vec2 spd)

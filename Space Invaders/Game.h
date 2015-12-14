@@ -20,14 +20,14 @@ class Game
 public:
 	gameStateEnum gs;
 	GLuint width, height;
-	GLboolean keys[1024], keysProcessed[1024], mouse[3], mouseProcessed[3];
-	GLuint enemyAmt, playerKills, killAfterChange;
+	GLboolean keys[1024], keysProcessed[1024], mouse[3], mouseProcessed[3], shouldClose;
+	GLuint enemyAmt, playerKills, killAfterChange, anyKeyDelay;
 	float playerMaxHP, playerMaxEnergy;
 	glm::vec2 mousePos;
 	std::vector<gameObject> playerBullets, enemyBullets;
 	std::vector<Enemy> enemies;
 	std::vector<int> pBulletDelete, eBulletDelete, eDelete;
-	gameObject staticVisuals[3], buttons[4];
+	gameObject staticVisuals[8], buttons[3];
 
 	Game();
 	Game(GLuint widthIn, GLuint heightIn);

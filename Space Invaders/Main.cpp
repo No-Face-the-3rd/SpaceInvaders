@@ -64,6 +64,7 @@ int main(int argc,char *argv[])
 
 
 		glfwSwapBuffers(window);
+		glfwSetWindowShouldClose(window, SpaceInvaders.shouldClose);
 	}
 
 	ResourceManager::clear();
@@ -78,8 +79,8 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 	{
 		if (action == GLFW_PRESS)
 		{
-			if (key == GLFW_KEY_ESCAPE)
-				glfwSetWindowShouldClose(window, GL_TRUE);
+			//if (key == GLFW_KEY_ESCAPE)
+				//glfwSetWindowShouldClose(window, GL_TRUE);
 			SpaceInvaders.keys[key] = GL_TRUE;
 		}
 		else if (action == GLFW_RELEASE)
